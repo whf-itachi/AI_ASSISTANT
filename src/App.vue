@@ -32,15 +32,18 @@
               :class="['message', message.type]"
             >
               <div class="message-avatar">
-                <el-avatar :icon="message.type === 'user' ? 'User' : 'Service'" />
+                <el-avatar 
+                  :size="40"
+                  :src="message.type === 'user' ? '/src/assets/guke.png' : '/src/assets/kefu.png'"
+                >
+                  <el-icon v-if="!message.type === 'user'"><User /></el-icon>
+                  <el-icon v-else><Service /></el-icon>
+                </el-avatar>
               </div>
               <div class="message-content">
                 <div class="message-text">{{ getDisplayContent(message, index) }}</div>
                 <div class="message-actions" v-if="message.type === 'assistant'">
-                  <el-button-group>
-                    <el-button size="small" :icon="CopyDocument" @click="copyMessage(message.content)" />
-                    <el-button size="small" :icon="Star" @click="toggleFavorite(message)" />
-                  </el-button-group>
+                  <el-button size="small" :icon="CopyDocument" @click="copyMessage(message.content)" />
                 </div>
               </div>
             </div>
@@ -82,8 +85,9 @@ import { ref, onMounted, nextTick } from 'vue'
 import { 
   Promotion, 
   CopyDocument, 
-  Star,
-  Link
+  Link,
+  User,
+  Service
 } from '@element-plus/icons-vue'
 import { sendChatMessage } from './api/chat'
 import { handleError, handleSuccess } from './utils/error-handler'
@@ -113,11 +117,6 @@ const copyMessage = async (content) => {
   } catch (error) {
     handleError(error)
   }
-}
-
-const toggleFavorite = (message) => {
-  message.favorite = !message.favorite
-  handleSuccess(message.favorite ? '已收藏' : '已取消收藏')
 }
 
 const sendMessage = async () => {
@@ -278,8 +277,16 @@ onMounted(() => {
   margin-bottom: 30px;
 }
 
+.message.user {
+  flex-direction: row-reverse;
+}
+
 .message-avatar {
   flex-shrink: 0;
+}
+
+.message-avatar :deep(.el-avatar) {
+  background-color: transparent !important;
 }
 
 .message-content {
@@ -289,6 +296,10 @@ onMounted(() => {
   word-wrap: break-word;
 }
 
+.message.user .message-content {
+  text-align: right;
+}
+
 .message-text {
   line-height: 1.6;
   white-space: pre-wrap;
@@ -296,29 +307,35 @@ onMounted(() => {
   font-size: 15px;
   color: #333;
   font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  display: inline-block;
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background-color: #f5f7fa;
 }
 
-.message-text :deep(pre) {
-  background-color: #f6f8fa;
-  padding: 16px;
-  border-radius: 6px;
-  overflow-x: auto;
-  margin: 10px 0;
+.message.user .message-text {
+  background-color: #409EFF;
+  color: white;
 }
 
-.message-text :deep(code) {
-  font-family: 'Fira Code', monospace;
-  font-size: 0.9em;
+.message.assistant .message-text {
+  background-color: #f5f7fa;
+  color: #333;
 }
 
 .message-actions {
   margin-top: 10px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  display: flex;
+  gap: 8px;
 }
 
-.message:hover .message-actions {
-  opacity: 1;
+.message.user .message-actions {
+  justify-content: flex-end;
+}
+
+.message.assistant .message-actions {
+  justify-content: flex-start;
 }
 
 .chat-input-container {
