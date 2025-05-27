@@ -5,18 +5,28 @@
       <div class="header">
         <img src="/logo.svg" alt="Logo" class="logo" />
         <h1>智能客服助手</h1>
-      </div>
-
-      <!-- 导航链接 -->
-      <div class="nav-links">
-        <a href="https://chat.openai.com" target="_blank" class="nav-link">
-          <el-icon><Link /></el-icon>
-          <span>ChatGPT</span>
-        </a>
-        <a href="https://www.deepseek.com" target="_blank" class="nav-link">
-          <el-icon><Link /></el-icon>
-          <span>DeepSeek</span>
-        </a>
+        <el-dropdown class="more-dropdown" trigger="click">
+          <el-button type="primary" link>
+            更多
+            <el-icon class="el-icon--right"><arrow-down /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item @click="navigateTo('/chat')">
+                <el-icon><ChatDotRound /></el-icon>
+                公司介绍
+              </el-dropdown-item>
+              <el-dropdown-item @click="navigateTo('/knowledge')">
+                <el-icon><Collection /></el-icon>
+                产品介绍
+              </el-dropdown-item>
+              <el-dropdown-item @click="navigateTo('/settings')">
+                <el-icon><Setting /></el-icon>
+                联系我们
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
 
       <!-- 聊天区域 -->
@@ -87,7 +97,11 @@ import {
   CopyDocument, 
   Link,
   User,
-  Service
+  Service,
+  ArrowDown,
+  ChatDotRound,
+  Collection,
+  Setting
 } from '@element-plus/icons-vue'
 import { sendChatMessage } from './api/chat'
 import { handleError, handleSuccess } from './utils/error-handler'
@@ -100,6 +114,11 @@ const messagesContainer = ref(null)
 const loading = ref(false)
 const currentStreamingMessage = ref('')
 const error = ref(null)
+
+const navigateTo = (path) => {
+  // 这里可以添加路由跳转逻辑
+  console.log('Navigating to:', path)
+}
 
 // 渲染时最后一条助手消息加上光标
 const getDisplayContent = (message, index) => {
@@ -232,6 +251,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid #e5e5e5;
+  position: relative;
 }
 
 .logo {
@@ -245,25 +265,19 @@ onMounted(() => {
   color: #303133;
 }
 
-.nav-links {
-  padding: 15px 20px;
-  display: flex;
-  gap: 20px;
-  border-bottom: 1px solid #e5e5e5;
+.more-dropdown {
+  margin-left: auto;
 }
 
-.nav-link {
+.more-dropdown :deep(.el-dropdown-menu__item) {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #409EFF;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: color 0.3s ease;
+  padding: 8px 16px;
 }
 
-.nav-link:hover {
-  color: #66b1ff;
+.more-dropdown :deep(.el-icon) {
+  margin-right: 4px;
 }
 
 .chat-container {
@@ -393,10 +407,6 @@ onMounted(() => {
     padding: 15px;
   }
 
-  .nav-links {
-    padding: 10px 15px;
-  }
-
   .chat-messages {
     padding: 15px;
   }
@@ -457,16 +467,12 @@ onMounted(() => {
     color: #ffffff;
   }
 
-  .nav-links {
-    border-bottom-color: #3d3d3d;
-  }
-
-  .nav-link {
-    color: #66b1ff;
-  }
-
-  .nav-link:hover {
+  .more-dropdown :deep(.el-button) {
     color: #409EFF;
+  }
+  
+  .more-dropdown :deep(.el-button:hover) {
+    color: #66b1ff;
   }
 
   .chat-input-container {
