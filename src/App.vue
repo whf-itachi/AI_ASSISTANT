@@ -41,7 +41,7 @@
                 </el-avatar>
               </div>
               <div class="message-content">
-                <div class="message-text">{{ getDisplayContent(message, index) }}</div>
+                <div class="message-text" v-html="getDisplayContent(message, index)"></div>
                 <div class="message-actions" v-if="message.type === 'assistant'">
                   <el-button size="small" :icon="CopyDocument" @click="copyMessage(message.content)" />
                 </div>
@@ -104,10 +104,18 @@ const error = ref(null)
 // 渲染时最后一条助手消息加上光标
 const getDisplayContent = (message, index) => {
   const isLast = index === messages.value.length - 1
+  let content = message.content
+  
+  // 检测并转换链接
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  content = content.replace(urlRegex, url => {
+    return `<a href="${url}" target="_blank" class="message-link">${url}</a>`
+  })
+  
   if (message.type === 'assistant' && isLast && loading.value) {
-    return message.content + '｜' // 打字机光标
+    return content + '｜' // 打字机光标
   }
-  return message.content
+  return content
 }
 
 const copyMessage = async (content) => {
@@ -312,6 +320,16 @@ onMounted(() => {
   padding: 12px 16px;
   border-radius: 12px;
   background-color: #f5f7fa;
+}
+
+.message-text :deep(.message-link) {
+  color: #409EFF;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.message-text :deep(.message-link:hover) {
+  text-decoration: underline;
 }
 
 .message.user .message-text {
