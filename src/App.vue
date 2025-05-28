@@ -3,7 +3,7 @@
     <div class="content-wrapper">
       <!-- 标题区域 -->
       <div class="header">
-        <img src="/logo.svg" alt="Logo" class="logo" />
+        <img src="/favicon.ico" alt="Logo" class="logo" />
         <h1>智能客服助手</h1>
         <el-dropdown class="more-dropdown" trigger="click">
           <el-button type="primary" link>
