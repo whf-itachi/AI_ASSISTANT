@@ -6,7 +6,7 @@ export const API_CONFIG = {
   },
   // 生产环境
   production: {
-    baseURL: 'http://haitch.com'
+    baseURL: 'https://haitch.tech'
   }
 }
 

@@ -4,7 +4,7 @@ import path from 'path'
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/AI/',
+  base: '/assistant/',
   server: {
     host: 'localhost',
     port: 5173,
