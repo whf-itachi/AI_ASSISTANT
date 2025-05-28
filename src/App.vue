@@ -44,7 +44,7 @@
               <div class="message-avatar">
                 <el-avatar 
                   :size="40"
-                  :src="message.type === 'user' ? '/src/assets/guke.png' : '/src/assets/kefu.png'"
+                  :src="message.type === 'user' ? `${getBaseUrl()}/assets/guke.png` : `${getBaseUrl()}/assets/kefu.png`"
                 >
                   <el-icon v-if="!message.type === 'user'"><User /></el-icon>
                   <el-icon v-else><Service /></el-icon>
@@ -105,6 +105,11 @@ import {
 } from '@element-plus/icons-vue'
 import { sendChatMessage } from './api/chat'
 import { handleError, handleSuccess } from './utils/error-handler'
+
+// 获取基础路径
+const getBaseUrl = () => {
+  return import.meta.env.PROD ? '/assistant' : ''
+}
 
 const messages = ref([
   { type: 'assistant', content: '你好！我是你的 AI 助手，有什么我可以帮你的吗？' }
