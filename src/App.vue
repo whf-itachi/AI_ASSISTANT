@@ -21,8 +21,12 @@
                 产品介绍
               </el-dropdown-item>
               <el-dropdown-item @click="navigateTo('/settings')">
-                <el-icon><Setting /></el-icon>
+                <el-icon><Cellphone /></el-icon>
                 联系我们
+              </el-dropdown-item>
+              <el-dropdown-item @click="goToTicketManagement">
+                <el-icon><Tickets /></el-icon>
+                工单管理
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -101,7 +105,9 @@ import {
   ArrowDown,
   ChatDotRound,
   Collection,
-  Setting
+  Setting,
+  Tickets,
+  Cellphone
 } from '@element-plus/icons-vue'
 import { sendChatMessage } from './api/chat'
 import { handleError, handleSuccess } from './utils/error-handler'
@@ -123,6 +129,10 @@ const error = ref(null)
 const navigateTo = (path) => {
   // 这里可以添加路由跳转逻辑
   console.log('Navigating to:', path)
+}
+
+const goToTicketManagement = () => {
+  window.open('https://haitch.tech/mobile/', '_blank');
 }
 
 // 渲染时最后一条助手消息加上光标
