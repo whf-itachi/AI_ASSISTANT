@@ -99,17 +99,15 @@ import { ref, onMounted, nextTick } from 'vue'
 import { 
   Promotion, 
   CopyDocument, 
-  Link,
   User,
   Service,
   ArrowDown,
   ChatDotRound,
   Collection,
-  Setting,
   Tickets,
   Cellphone
 } from '@element-plus/icons-vue'
-import { sendChatMessage } from './api/chat'
+import { chatApi  } from './api/chat'
 import { handleError, handleSuccess } from './utils/error-handler'
 
 // 获取基础路径
@@ -125,6 +123,7 @@ const messagesContainer = ref(null)
 const loading = ref(false)
 const currentStreamingMessage = ref('')
 const error = ref(null)
+const attachments = ref([])  // 附件列表
 
 const navigateTo = (path) => {
   // 这里可以添加路由跳转逻辑
@@ -176,8 +175,8 @@ const sendMessage = async () => {
 
     await nextTick()
     scrollToBottom()
-
-    const stream = await sendChatMessage(userMessage)
+    const stream = await chatApi.streamMessage(userMessage)
+    // const stream = await sendChatMessage(userMessage)
     const reader = stream.getReader()
     const decoder = new TextDecoder('utf-8')
 
@@ -186,9 +185,27 @@ const sendMessage = async () => {
       if (done) break
 
       const chunk = decoder.decode(value, { stream: true })
-      const sanitizedChunk = chunk.replace(/\n/g, '') // 去除所有换行符
-      currentStreamingMessage.value += sanitizedChunk
-      messages.value[messages.value.length - 1].content = currentStreamingMessage.value
+
+      try {
+        const data = JSON.parse(chunk)
+        if (data.type === 'text') {
+          currentStreamingMessage.value += data.content
+          messages.value[messages.value.length - 1].content = currentStreamingMessage.value
+        } else if (data.type === 'attachments' && Array.isArray(data.content) && data.content.length > 0) {  // 非空附件数组进行附件处理逻辑
+          const res = await chatApi.attachments(data.content)
+
+          if (res.ok) {
+            const attachmentInfo = await res.json()
+            attachments.value = attachmentInfo
+            messages.value.push({
+              type: 'attachment',
+              content: attachmentInfo
+            })
+          }
+        }
+      } catch (e) {
+        console.warn('JSON 解析失败:', chunk)
+      }
 
       await nextTick()
       requestAnimationFrame(() => scrollToBottom())
