@@ -12,7 +12,7 @@ export const API_URLS = {
     attachments: '/AI/assistant/chat/attachments'  // 根据文档id列表查询相关附件信息
   },
   attachment: {
-    login: '/api/user/login',
+    attachmentPreview: '/AI/assistant/attachment/preview/{attachmentId}',
     logout: '/api/user/logout',
     profile: '/api/user/profile'
   }

@@ -56,6 +56,32 @@
               </div>
               <div class="message-content">
                 <div class="message-text" v-html="getDisplayContent(message, index)"></div>
+
+                <div v-if="message.type === 'assistant' && message.attachments" class="attachments">
+                  <template v-for="(att, i) in message.attachments" :key="i">
+                    <!-- 图片附件 -->
+                    <img
+                      v-if="att.file_type.startsWith('image/')"
+                      :src="`data:image/jpeg;base64,${att.attachment_content}`"
+                      :alt="att.file_name"
+                      class="attachment-thumb"
+                      @click="previewAttachment(att)"
+                      style="cursor: pointer;"
+                    />
+
+                    <!-- 视频附件 -->
+                    <img
+                      v-else-if="att.file_type.startsWith('video/')"
+                      :src="`${getBaseUrl()}/assets/video-thumbnail.jpg`"
+                      :alt="att.file_name"
+                      class="attachment-thumb"
+                      @click="previewAttachment(att)"
+                      style="cursor: pointer;"
+                    />
+
+                  </template>
+                </div>
+
                 <div class="message-actions" v-if="message.type === 'assistant'">
                   <el-button size="small" :icon="CopyDocument" @click="copyMessage(message.content)" />
                 </div>
@@ -95,6 +121,14 @@
       </div>
     </div>
   </div>
+
+  <PreviewDialog
+    v-model="previewDialogVisible"
+    :file-name="previewFileName"
+    :file-type="previewFileType"
+    :preview-url="previewUrl"
+  />
+
 </template>
 
 <script setup>
@@ -113,6 +147,13 @@ import {
 } from '@element-plus/icons-vue'
 import { chatApi  } from './api/chat'
 import { handleError, handleSuccess } from './utils/error-handler'
+import PreviewDialog from './components/PreviewDialog.vue'
+
+const previewDialogVisible = ref(false)
+const previewUrl = ref('')
+const previewFileType = ref('')
+const previewFileName = ref('')
+
 
 // 获取基础路径
 const getBaseUrl = () => {
@@ -130,7 +171,6 @@ const error = ref(null)
 const attachments = ref([])  // 附件列表
 
 const navigateTo = (path) => {
-  // 这里可以添加路由跳转逻辑
   console.log('Navigating to:', path)
 }
 
@@ -154,6 +194,19 @@ const getDisplayContent = (message, index) => {
   }
   return content
 }
+
+const previewAttachment = async (att) => {
+  try {
+    const blob = await chatApi.attachmentPreview(att.attachment_id)
+    previewUrl.value = URL.createObjectURL(blob)
+    previewFileName.value = att.file_name
+    previewFileType.value = att.file_type
+    previewDialogVisible.value = true
+  } catch (err) {
+    handleError('预览加载失败: ' + err.message)
+  }
+}
+
 
 const copyMessage = async (content) => {
   try {
@@ -205,16 +258,25 @@ const sendMessage = async () => {
           currentStreamingMessage.value += data.content
           messages.value[messages.value.length - 1].content = currentStreamingMessage.value
         } else if (data.type === 'attachments' && Array.isArray(data.content) && data.content.length > 0) {  // 非空附件数组进行附件处理逻辑
-          const res = await chatApi.attachments(data.content)
+          // 根据当前页面宽度判断是移动端还是电脑端
+          const isMobile = window.innerWidth <= 768
+          const sizeParam = isMobile ? 'small' : 'large'
+          const res = await chatApi.attachments({
+            file_ids: data.content,
+            size: sizeParam
+          })
 
-          if (res.ok) {
-            const attachmentInfo = await res.json()
-            attachments.value = attachmentInfo
-            messages.value.push({
-              type: 'attachment',
-              content: attachmentInfo
-            })
+          console.log('附件信息:', res)
+          if (res && res.attachments) {
+            attachments.value = res.attachments
+            // 将附件添加到当前助手消息中
+            const currentMessage = messages.value[messages.value.length - 1]
+            if (currentMessage && currentMessage.type === 'assistant') {
+              currentMessage.attachments = res.attachments
+            }
+            console.log('当前消息列表:', messages.value)
           }
+          
         }
       } catch (e) {
         console.warn('JSON 解析失败:', chunk)
@@ -433,6 +495,16 @@ onMounted(() => {
 .input-tips {
   display: flex;
   gap: 10px;
+}
+
+.attachment-thumb {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 移动端适配 */
