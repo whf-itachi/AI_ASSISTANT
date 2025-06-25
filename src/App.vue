@@ -498,6 +498,10 @@ onMounted(() => {
   .app-container {
     padding: 0;
   }
+  
+  .message-avatar {
+    display: none; /* 隐藏移动端的头像 */
+  }
 
   .content-wrapper {
     max-width: 100%;
