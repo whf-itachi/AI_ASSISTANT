@@ -55,7 +55,11 @@
                 </el-avatar>
               </div>
               <div class="message-content">
-                <div class="message-text" v-html="getDisplayContent(message, index)"></div>
+                <div class="message-text">
+                  <div class="markdown-body" v-html="getDisplayContent(message, index)"></div>
+                </div>
+
+                <!-- <div class="message-text" v-html="getDisplayContent(message, index)"></div> -->
 
                 <div v-if="message.type === 'assistant' && message.attachments" class="attachments">
                   <template v-for="(att, i) in message.attachments" :key="i">
@@ -148,11 +152,18 @@ import {
 import { chatApi  } from './api/chat'
 import { handleError, handleSuccess } from './utils/error-handler'
 import PreviewDialog from './components/PreviewDialog.vue'
+import { marked } from 'marked'
 
 const previewDialogVisible = ref(false)
 const previewUrl = ref('')
 const previewFileType = ref('')
 const previewFileName = ref('')
+const userInput = ref('')
+const messagesContainer = ref(null)
+const loading = ref(false)
+const currentStreamingMessage = ref('')
+const error = ref(null)
+const attachments = ref([])  // 附件列表
 
 
 // 获取基础路径
@@ -163,12 +174,6 @@ const getBaseUrl = () => {
 const messages = ref([
   { type: 'assistant', content: '你好！我是你的 AI 助手，有什么我可以帮你的吗？' }
 ])
-const userInput = ref('')
-const messagesContainer = ref(null)
-const loading = ref(false)
-const currentStreamingMessage = ref('')
-const error = ref(null)
-const attachments = ref([])  // 附件列表
 
 const navigateTo = (path) => {
   console.log('Navigating to:', path)
@@ -178,20 +183,14 @@ const goToTicketManagement = () => {
   window.open('https://haitch.tech/mobile/', '_blank');
 }
 
-// 渲染时最后一条助手消息加上光标
+// 获取消息内容的显示格式
 const getDisplayContent = (message, index) => {
   const isLast = index === messages.value.length - 1
   let content = message.content
-  
-  // 检测并转换链接
-  const urlRegex = /(https?:\/\/[^\s]+)/g
-  content = content.replace(urlRegex, url => {
-    return `<a href="${url}" target="_blank" class="message-link">${url}</a>`
-  })
-  
-  if (message.type === 'assistant' && isLast && loading.value) {
-    return content + '｜' // 打字机光标
-  }
+
+  // 用 marked 解析 markdown
+  content = marked.parse(content)
+
   return content
 }
 
@@ -317,19 +316,6 @@ onMounted(() => {
   font-family: monospace;
   line-height: 1.6;
   color: #333;
-}
-
-.cursor {
-  display: inline-block;
-  width: 1px;
-  background: #333;
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  50% {
-    background-color: transparent;
-  }
 }
 
 .app-container {
@@ -601,32 +587,53 @@ onMounted(() => {
   }
 }
 
-/* 添加打字机效果的样式 */
-.message.assistant .message-text {
-  display: inline-block;
-  animation: fadeIn 0.3s ease;
+.markdown-body {
+  all: unset;
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  font-size: 15px;
+  color: #333;
+  line-height: 1.6;
+  white-space: normal;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+:deep(.markdown-body p) {
+  margin: 0 !important;
+  padding: 0 !important;
 }
-
-/* 打字机效果的光标 */
-.message.assistant .message-text::after {
-  content: '|';
-  display: inline-block;
-  animation: blink 1s infinite;
-  color: #409EFF;
+.markdown-body strong {
   font-weight: bold;
 }
-
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+.markdown-body em {
+  font-style: italic;
 }
-</style> 
+.markdown-body pre {
+  background-color: #f4f4f4;
+  padding: 10px;
+  overflow-x: auto;
+  border-radius: 6px;
+}
+.markdown-body code {
+  font-family: monospace;
+  background: #eee;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+.markdown-body p {
+  margin: 0px;
+}
+.markdown-body ul {
+  padding-left: 1.2em;
+  list-style-type: disc;
+}
+.markdown-body ol {
+  padding-left: 1.2em;
+  list-style-type: decimal;
+}
+.markdown-body a {
+  color: #409EFF;
+  text-decoration: none;
+}
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+</style>
