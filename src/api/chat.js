@@ -4,9 +4,9 @@ import api, { API_CONFIG, API_URLS } from '../config/api'
 import { handleError } from '../utils/error-handler'
 
 export const chatApi = {
-  getChatHistory: async () => {
+  feedBackQuestion: async (question) => {
     try {
-      return await api.get(API_URLS.chat.history)
+      return await api.post(API_URLS.chat.feedback, {question})
     } catch (error) {
       return handleError(error)
     }

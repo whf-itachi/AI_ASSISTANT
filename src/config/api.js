@@ -7,8 +7,8 @@ import { handleError } from '../utils/error-handler'
 // 所有 API 路径统一管理
 export const API_URLS = {
   chat: {
-    stream: '/AI/assistant/chat/stream',
-    history: '/AI/assistant/chat/history',
+    stream: '/AI/assistant/chat/stream',  // 流式会话
+    feedback: '/AI/assistant/chat/feedback',  // 反馈问题
     attachments: '/AI/assistant/chat/attachments'  // 根据文档id列表查询相关附件信息
   },
   attachment: {

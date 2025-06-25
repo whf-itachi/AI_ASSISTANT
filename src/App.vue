@@ -59,6 +59,9 @@
                 <div class="message-actions" v-if="message.type === 'assistant'">
                   <el-button size="small" :icon="CopyDocument" @click="copyMessage(message.content)" />
                 </div>
+                <div class="message-actions" v-if="message.type === 'user'">
+                  <el-button size="small" :icon="Connection" @click="feedBack(message.content)" />
+                </div>
               </div>
             </div>
           </template>
@@ -105,7 +108,8 @@ import {
   ChatDotRound,
   Collection,
   Tickets,
-  Cellphone
+  Cellphone,
+  Connection
 } from '@element-plus/icons-vue'
 import { chatApi  } from './api/chat'
 import { handleError, handleSuccess } from './utils/error-handler'
@@ -155,6 +159,15 @@ const copyMessage = async (content) => {
   try {
     await navigator.clipboard.writeText(content)
     handleSuccess('复制成功')
+  } catch (error) {
+    handleError(error)
+  }
+}
+const feedBack = async (content) => {
+  try {
+    const res = await chatApi.feedBackQuestion(content)
+    console.log('Feedback response:', res)
+    handleSuccess('反馈成功')
   } catch (error) {
     handleError(error)
   }
