@@ -153,6 +153,7 @@ import { chatApi  } from './api/chat'
 import { handleError, handleSuccess } from './utils/error-handler'
 import PreviewDialog from './components/PreviewDialog.vue'
 import { marked } from 'marked'
+import { joinUrlParts, stripPrefix } from './utils/url_utils'
 
 const previewDialogVisible = ref(false)
 const previewUrl = ref('')
@@ -194,16 +195,13 @@ const getDisplayContent = (message, index) => {
   return content
 }
 
-const previewAttachment = async (att) => {
-  try {
-    const blob = await chatApi.attachmentPreview(att.attachment_id)
-    previewUrl.value = URL.createObjectURL(blob)
-    previewFileName.value = att.file_name
-    previewFileType.value = att.file_type
-    previewDialogVisible.value = true
-  } catch (err) {
-    handleError('预览加载失败: ' + err.message)
-  }
+const previewAttachment = (att) => {
+  const baseUrl = import.meta.env.VITE_APP_API_BASE_URL || ''
+  const cleanPath = stripPrefix(att.file_path, '/var/www')
+  previewUrl.value = joinUrlParts(baseUrl, cleanPath, att.file_name)
+  previewFileName.value = att.file_name
+  previewFileType.value = att.file_type
+  previewDialogVisible.value = true
 }
 
 
