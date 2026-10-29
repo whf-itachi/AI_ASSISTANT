@@ -192,15 +192,19 @@ const sendMessage = async () => {
           currentStreamingMessage.value += data.content
           messages.value[messages.value.length - 1].content = currentStreamingMessage.value
         } else if (data.type === 'attachments' && Array.isArray(data.content) && data.content.length > 0) {  // 非空附件数组进行附件处理逻辑
-          const res = await chatApi.attachments(data.content)
-
-          if (res.ok) {
-            const attachmentInfo = await res.json()
-            attachments.value = attachmentInfo
-            messages.value.push({
-              type: 'attachment',
-              content: attachmentInfo
-            })
+          // chatApi.attachments 走 axios 拦截器，成功时已解包为 { attachments: [...] }
+          try {
+            const res = await chatApi.attachments(data.content)
+            if (res && Array.isArray(res.attachments) && res.attachments.length > 0) {
+              const attachmentInfo = res.attachments
+              attachments.value = attachmentInfo
+              messages.value.push({
+                type: 'attachment',
+                content: attachmentInfo
+              })
+            }
+          } catch (err) {
+            console.warn('附件查询失败:', err)
           }
         }
       } catch (e) {

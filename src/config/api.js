@@ -29,7 +29,7 @@ export const API_CONFIG = {
     'Content-Type': 'application/json'
   },
   responseCode: {
-    SUCCESS: 200,
+    SUCCESS: 0,
     UNAUTHORIZED: 401,
     FORBIDDEN: 403,
     NOT_FOUND: 404,
